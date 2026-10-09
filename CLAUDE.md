@@ -54,6 +54,12 @@ Fill in as they're created; keep them working.
 - `POST /api/alerts/test` · `GET /api/metrics` · `POST /api/twilio/inbound` (P2)
 Changing the contract: update this section and tell both teammates.
 
+## Subagents (`.claude/agents/`)
+- `data-reviewer` — after each small generation batch, before generating the full dataset.
+- `leakage-auditor` — after changing features/train/evaluate/patterns, and before any number goes on a slide.
+- `submission-checker` — at feature freeze (04:00) and before submitting.
+They report only; fix findings in the main session.
+
 ## Rules
 1. **No leakage.** Train only on prefixes before `first_ask_index`; split by `conv_id`; never train on or build the pattern library from `test_handwritten.jsonl`.
 2. **Risk score comes only from the trained model.** The LLM only generates synthetic data and wording.
