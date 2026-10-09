@@ -13,7 +13,9 @@ Verify:
    in CLAUDE.md's Commands section exists and runs (no `[TBD]` left).
 2. **Demo path (PRD §8):** seeded investment-scam conversation crosses `strong_stop` before
    `first_ask_index`; benign hard negative stays below 0.40; `/api/predict` matches the contract in
-   CLAUDE.md; avatar clip paths resolve; WhatsApp alert code fails gracefully without credentials.
+   CLAUDE.md; avatar clip paths resolve; the API starts and replay mode works with no Telegram tokens
+   set; Telegram relay/alert code fails gracefully (no crash) when Telegram is unreachable; live
+   alerts fire before the money-request line of `data/demo_script.md`.
 3. **Numbers:** every metric in slides/README/UI exists in `reports/metrics.md`; hand-written test
    results are reported separately from generated validation; no invented evidence counts.
 4. **Wording:** "predict"/"ramal" used, never "detect"; evidence text says "dalam pangkalan data kami".

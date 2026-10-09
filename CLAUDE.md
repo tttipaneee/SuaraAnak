@@ -8,10 +8,15 @@ Full product requirements: `docs/PRD.md` — read it before planning a feature o
 Module rules load automatically from `.claude/rules/` (ml.md, api.md, web.md).
 
 ## What we're building
-Mak forwards or exports a chat with a new contact. A trained model predicts **P(money request within
-the next 48 hours)** at every point in the conversation, explains why (feature reasons + matches in our
-scam-pattern library), and when risk crosses a level, Mak sees a pre-recorded consented video of her
-own child saying what to do, while the child gets a WhatsApp alert.
+Mak does nothing special: messages from a new contact are scored as they arrive. A trained model predicts
+**P(money request within the next 48 hours)** at every point in the conversation, explains why (feature
+reasons + matches in our scam-pattern library), and when risk crosses a level, the "Suara Anak 🛡" Telegram
+bot sends Mak a pre-recorded consented video of her own child saying what to do, and warns the child.
+
+**Live demo = Telegram, 2 phones + laptop** (details: `docs/PRD.md` §1, §8). Contact bot ("Daniel 😊")
+relays the scammer's lines from the laptop console to Mak's phone and her replies back; Suara Anak bot
+sends alerts. Mak sees two separate chats. Replay mode on `/demo` is the offline fallback. We do **not**
+read anyone's real WhatsApp/Telegram account; that is the pitched production path only.
 
 ## The core claim — never drift from it
 **Prediction, not detection.** Proof = lead time vs a keyword baseline that only fires at the money request.
@@ -19,9 +24,9 @@ Say "predict" everywhere; never add a feature that only works after money is men
 
 ## Repo map
 ```
-data/      JSONL conversations (generated + hand-written test)
+data/      JSONL conversations (generated + hand-written test) · demo_script.md (stage lines)
 ml/        generate.py · features.py · train.py · evaluate.py · patterns.py · models/
-api/       FastAPI: main.py · db.py · predictor.py · explain.py · whatsapp.py · parse_export.py · routes/
+api/       FastAPI: main.py · db.py · predictor.py · explain.py · telegram_bot.py · alerts.py · parse_export.py · routes/
 web/       Vite + React + TS (design from Partner in design/)
 assets/avatar/   heads_up.mp4 · strong_stop.mp4 · safe.mp4
 reports/   metrics.md (only source for numbers on slides)
@@ -36,7 +41,7 @@ Fill in as they're created; keep them working.
 - Run demo (seed + API + web): `scripts/run_demo.sh`
 
 ## API contract (shared by frontend and backend)
-- `GET /api/conversations` → `[{id, title, source, message_count}]`
+- `GET /api/conversations` → `[{id, title, source, message_count}]` (`source`: `replay` | `upload` | `telegram`)
 - `GET /api/conversations/{id}` → `{id, title, messages:[{idx, day, hour, sender, text}]}`
 - `POST /api/predict` `{conversation_id}` or `{messages:[...]}` →
 ```json
@@ -50,8 +55,15 @@ Fill in as they're created; keep them working.
  "library": {"paraphrased_reports": 60, "generated_cases": 240}, "model_version": "lgbm_v1"}
 ```
 `evidence` is `null` when nothing matches. Levels: `safe` < 0.40 ≤ `heads_up` < 0.70 ≤ `strong_stop`.
+- `POST /api/demo/send` `{text}` → `{conversation_id, idx}` — scammer console: Contact bot sends `text`
+  to Mak and stores it as `sender:"other"` in the live conversation (P0)
+- `GET /api/demo/next-line` → `{idx, text}` or `null` — next line of `data/demo_script.md` (P0)
+- `POST /api/demo/reset` → `{conversation_id}` — start a fresh live conversation (P0)
+- `POST /api/alerts/test` → `{mak: "sent"|"failed", anak: "sent"|"failed"}` (P0)
 - `POST /api/upload-export` (multipart .txt) → `{conversation_id}` (P1)
-- `POST /api/alerts/test` · `GET /api/metrics` · `POST /api/twilio/inbound` (P2)
+- `GET /api/metrics` (P0 pitch)
+Live conversations appear in `GET /api/conversations` with `source:"telegram"`; the dashboard polls
+`GET /api/conversations/{id}` + `POST /api/predict` every ~2 s. Telegram uses long polling (no webhook).
 Changing the contract: update this section and tell both teammates.
 
 ## Subagents (`.claude/agents/`)
@@ -68,8 +80,9 @@ They report only; fix findings in the main session.
 5. **Time-box 45 minutes.** If stuck, propose a fallback from the cut list in `docs/PRD.md` §9.
 6. **Simple over clever.** No deep learning; justify any new heavy dependency in one line.
 7. **One command per task**, documented above as you go.
-8. **Secrets only in `.env`** (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM, ANAK_WHATSAPP_TO, LLM_API_KEY). Never commit or print them.
+8. **Secrets only in `.env`** (TELEGRAM_BOT_TOKEN, TELEGRAM_CONTACT_BOT_TOKEN, MAK_TELEGRAM_CHAT_ID, ANAK_TELEGRAM_CHAT_ID, LLM_API_KEY; non-secret: DEMO_SECONDS_PER_DAY). Never commit or print them.
 9. **Commit after each working milestone**; never leave `main` broken.
 10. **Work autonomously.** Report what was done, what's next, and any risk to the 18:00 end-to-end milestone. Ask only for irreversible or genuinely ambiguous decisions.
-11. **Privacy.** No real names, numbers or bank accounts in data, tests, seeds or screenshots.
+11. **Privacy.** No real names, numbers or bank accounts in data, tests, seeds or screenshots. Demo Telegram
+    accounts use display names "Mak"/"Anak" with phone numbers hidden; never log chat IDs or tokens.
 12. **Verify before claiming done**: run the script/test, show the output.
