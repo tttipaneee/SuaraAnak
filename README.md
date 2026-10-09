@@ -2,7 +2,7 @@
 
 Dormathon 2026 · Track 1: Predictive Model ("Predict Early, Decide Better").
 
-Suara Anak predicts when a scammer is about to ask Mak for money — **P(money request within the next 48 hours)** at every point in a chat — explains why with evidence from a scam-pattern library, and warns her with a consented video of her own child while alerting the child on WhatsApp.
+Suara Anak predicts when a scammer is about to ask Mak for money — **P(money request within the next 48 hours)** at every point in a chat — explains why with evidence from a scam-pattern library, and warns her with a consented video of her own child while alerting the child. Mak doesn't forward or export anything: the live demo runs on Telegram (a contact bot relays the conversation, the "Suara Anak 🛡" bot sends alerts), with a replay mode as offline fallback.
 
 ## Start here
 - `docs/PRD.md` — product requirements, milestones split between the two of us, demo script, cut list

@@ -13,4 +13,5 @@ paths:
 - Use "predict"/"ramal" wording; never "detect".
 - Evidence text must say "dalam pangkalan data kami" and never show numbers the API didn't return.
 - Avatar clips come from `assets/avatar/` via the API's `clip` field; show the "AI" watermark tag.
-- The presenter route `/demo` must work offline against seeded data (except WhatsApp).
+- The presenter route `/demo` must work offline against seeded data (replay mode). The scammer console
+  (FR17) and live polling of `source:"telegram"` conversations are the only parts that need network.
